@@ -1,0 +1,25 @@
+<template>
+    <lightning-card title="LWC Bike Currency" icon-name="standard:currency">
+        <div class="slds-var-p-around_medium">
+            <lightning-input
+                label="New Currency (e.g., SEK, EUR)"
+                value={newCurrency}
+                onchange={handleCurrencyChange}
+                placeholder="Enter currency code"
+            ></lightning-input>
+
+            <template if:true={isLoading}>
+                <lightning-spinner alternative-text="Updating..." size="small"></lightning-spinner>
+            </template>
+        </div>
+
+        <div slot="footer" class="slds-var-p-around_medium">
+            <lightning-button
+                label="Update currency"
+                variant="brand"
+                onclick={handleUpdateCurrency}
+                disabled={isButtonDisabled}
+            ></lightning-button>
+        </div>
+    </lightning-card>
+</template>
