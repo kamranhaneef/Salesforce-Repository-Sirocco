@@ -3,6 +3,13 @@ import { getRecord, getFieldValue } from 'lightning/uiRecordApi';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { CloseActionScreenEvent } from 'lightning/actions';
 
+import { getObjectInfo } from 'lightning/uiObjectInfoApi'; 
+import { getPicklistValues } from 'lightning/uiObjectInfoApi';
+
+import BIKE_OBJECT from '@salesforce/schema/Bike__c';
+
+import { getRecordNotifyChange } from 'lightning/uiRecordApi'; 
+
 import BIKE_CURRENCY_FIELD from '@salesforce/schema/Bike__c.Currency__c';
 import BIKE_PRICE_FIELD from '@salesforce/schema/Bike__c.Price__c';
 
@@ -21,6 +28,27 @@ export default class Sirocco_changeCurrency extends LightningElement {
     newCurrency = '';
     isLoading = false;
 
+    currencyOptions = []; 
+
+    @wire(getObjectInfo, { objectApiName: BIKE_OBJECT })
+    bikeObjectInfo;
+
+    @wire(getPicklistValues, {
+        recordTypeId: '$bikeObjectInfo.data.defaultRecordTypeId',
+        fieldApiName: BIKE_CURRENCY_FIELD
+    })
+    wiredPicklistValues({ error, data }) {
+        if (data) {
+            this.currencyOptions = data.values.map(item => ({
+                label: item.label,
+                value: item.value
+            }));
+            
+        } else if (error) {
+            this.showToast('Error', 'Error retrieving currency options: ' + error.body.message, 'error');
+        }
+    }
+
     @wire(getRecord, { recordId: '$recordId', fields })
     wiredBike({ error, data }) {
         if (data) {
@@ -35,9 +63,16 @@ export default class Sirocco_changeCurrency extends LightningElement {
         }
     }
     
+    get isSameCurrency() {
+        if (!this.bikeCurrency || !this.newCurrency) {
+            return false;
+        }
+        return this.newCurrency === this.bikeCurrency;
+    }
 
     get isButtonDisabled() {
-        return this.isLoading || !this.newCurrency || (this.newCurrency.toUpperCase() === this.bikeCurrency.toUpperCase());
+        //return this.isLoading || !this.newCurrency || (this.newCurrency.toUpperCase() === this.bikeCurrency.toUpperCase());
+        return this.isLoading || !this.newCurrency || this.isSameCurrency;
     }
 
     handleCurrencyChange(event) {
@@ -70,6 +105,8 @@ export default class Sirocco_changeCurrency extends LightningElement {
                     newCurrency: targetCurrency,
                     exchangeRate: exchangeRate
                 });
+
+                getRecordNotifyChange([{recordId: this.recordId}]);
 
                 this.showToast(
                     'Success', 
