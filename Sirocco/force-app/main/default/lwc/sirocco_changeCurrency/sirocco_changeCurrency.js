@@ -13,8 +13,8 @@ import { getRecordNotifyChange } from 'lightning/uiRecordApi';
 import BIKE_CURRENCY_FIELD from '@salesforce/schema/Bike__c.Currency__c';
 import BIKE_PRICE_FIELD from '@salesforce/schema/Bike__c.Price__c';
 
-import getRate from '@salesforce/apex/ExchangeRateService.getRate';
-import updateBikeAndPartsPrices from '@salesforce/apex/ExchangeRateService.updateBikeAndPartsPrices';
+import getExchangeRate from '@salesforce/apex/PriceUpdate_Service.getExchangeRate';
+import updateBikeAndPartsPrices from '@salesforce/apex/PriceUpdate_Service.updateBikeAndPartsPrices';
 
 const fields = [BIKE_CURRENCY_FIELD, BIKE_PRICE_FIELD];
 
@@ -93,7 +93,7 @@ export default class Sirocco_changeCurrency extends LightningElement {
 
         try {
             // 1. Call Apex to get the exchange rate
-            const exchangeRate = await getRate({ 
+            const exchangeRate = await getExchangeRate({ 
                 baseCurrency: baseCurrency, 
                 targetCurrency: targetCurrency 
             });
